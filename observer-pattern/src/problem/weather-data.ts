@@ -1,14 +1,30 @@
 import { getFakeData } from "./data-source/get-data";
+import type { IObserver } from "./interfaces/observer.interface";
+import type { ISubject } from "./interfaces/subject.interface";
+import type { IWeatherData } from "./interfaces/weather-data.interface";
 
-export class WeatherData {
+export class WeatherData implements ISubject<IWeatherData> {
   private temperature: number;
   private humidity: number;
   private pressure: number;
+  private observers: IObserver<IWeatherData>[] = [];
 
   constructor() {
     this.temperature = 0;
     this.humidity = 0;
     this.pressure = 0;
+  }
+
+  registerObserver(observer: IObserver<IWeatherData>): void {
+    this.observers.push(observer);
+  }
+
+  removeObserver(observer: IObserver<IWeatherData>): void {
+    this.observers = this.observers.filter((obs) => obs !== observer);
+  }
+
+  notifyObservers(data: IWeatherData): void {
+    this.observers.forEach((observer) => observer.update(data));
   }
 
   getTemperature(): number {
@@ -24,7 +40,11 @@ export class WeatherData {
   }
 
   measurementsChanged() {
-    // every time measurement changes it triggers this method
+    this.notifyObservers({
+      temperature: this.temperature,
+      humidity: this.humidity,
+      pressure: this.pressure,
+    });
   }
 
   setMeasurements(temperature: number, humidity: number, pressure: number) {

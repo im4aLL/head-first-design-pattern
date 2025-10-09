@@ -1,9 +1,13 @@
 import { WeatherData, weatherDataEmulator } from "./problem/weather-data";
 import type { IWeatherData } from "./problem/interfaces/weather-data.interface";
+import { DisplayOne } from "./problem/display-one";
+
+const weatherDataInstance = new WeatherData();
+const displayOneInstance = new DisplayOne(weatherDataInstance);
 
 // TODO: Implement displayOne function
 function displayOne(): string {
-  return `should show temperature only`;
+  return displayOneInstance.display();
 }
 
 // TODO: Implement displayTwo function
@@ -52,8 +56,6 @@ function renderApp(
 }
 
 // weather data emulator
-const weatherDataInstance = new WeatherData();
-
 setInterval(() => {
   weatherDataEmulator(weatherDataInstance);
 
