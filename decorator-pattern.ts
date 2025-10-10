@@ -1,37 +1,87 @@
-abstract class MessageService {
-  abstract send(message: string): void;
-}
+// 1. Base beverage class
+class Beverage {
+  description: string = "Unknown Beverage";
 
-class EmailMessageService extends MessageService {
-  send(message: string): void {
-    console.log(`Sending email message: ${message}`);
+  getDescription(): string {
+    return this.description;
+  }
+
+  cost(): number {
+    return 0;
   }
 }
 
-class User {
-  private messageService: MessageService;
-
-  constructor(messageService: MessageService) {
-    this.messageService = messageService;
+// 2. Specific drink types
+class Espresso extends Beverage {
+  constructor() {
+    super();
+    this.description = "Espresso";
   }
 
-  create(name: string) {
-    this.messageService.send(name);
+  cost(): number {
+    return 1.99;
   }
 }
 
-const messageService = new EmailMessageService();
-const user = new User(messageService);
-user.create("John");
+class HouseBlend extends Beverage {
+  constructor() {
+    super();
+    this.description = "House Blend Coffee";
+  }
+
+  cost(): number {
+    return 0.89;
+  }
+}
+
+// 3. Subclasses for every combination
+class HouseBlendWithMilk extends HouseBlend {
+  cost(): number {
+    return super.cost() + 0.1;
+  }
+
+  getDescription(): string {
+    return super.getDescription() + ", Milk";
+  }
+}
+
+class EspressoWithMocha extends Espresso {
+  cost(): number {
+    return super.cost() + 0.2;
+  }
+
+  getDescription(): string {
+    return super.getDescription() + ", Mocha";
+  }
+}
+
+class EspressoWithMochaAndWhip extends Espresso {
+  cost(): number {
+    return super.cost() + 0.2 + 0.15;
+  }
+
+  getDescription(): string {
+    return super.getDescription() + ", Mocha, Whip";
+  }
+}
+
+// 4. Usage
+const drink1 = new HouseBlendWithMilk();
+console.log(`${drink1.getDescription()} $${drink1.cost()}`);
+
+const drink2 = new EspressoWithMochaAndWhip();
+console.log(`${drink2.getDescription()} $${drink2.cost()}`);
 
 /*
-Problem
+This approach works, but quickly becomes unmanageable.
 
-You have a base message system (MessageService) that can send messages. Later, you want to add features dynamically like:
+If you have:
 
-Logging the message
-Sending via SMS or Slack in addition to Email
-Encrypting the message
+4 base drinks
+5 condiments (Milk, Mocha, Whip, Soy, Caramel)
 
-You don't want to modify the base message class every time.
+You'd need 4 × 2⁵ = 128 subclasses
+(EspressoWithMilkAndMochaAndWhipAndSoy, etc.)
+
+That's the class explosion problem and it violates the Open-Closed Principle (every new topping forces you to modify or add subclasses).
 */

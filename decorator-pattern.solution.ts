@@ -1,55 +1,95 @@
-abstract class MessageService {
-  abstract send(message: string): void;
-}
+abstract class Beverage {
+  description: string = "Unknown Beverage";
 
-class EmailMessageService extends MessageService {
-  send(message: string): void {
-    console.log(`Sending email message: ${message}`);
-  }
-}
-
-class User {
-  private messageService: MessageService;
-
-  constructor(messageService: MessageService) {
-    this.messageService = messageService;
+  getDescription(): string {
+    return this.description;
   }
 
-  create(name: string) {
-    this.messageService.send(name);
-  }
+  abstract cost(): number;
 }
 
-// ====================================
-
-abstract class MessageServiceDecorator extends MessageService {
-  protected messageService: MessageService;
-
-  constructor(messageService: MessageService) {
+class Espresso extends Beverage {
+  constructor() {
     super();
+    this.description = "Espresso";
+  }
 
-    this.messageService = messageService;
+  cost(): number {
+    return 1.99;
   }
 }
 
-class SMSMessageService extends MessageServiceDecorator {
-  send(message: string): void {
-    this.messageService.send(message);
-    console.log(`Sending SMS message: ${message}`);
+class HouseBlend extends Beverage {
+  constructor() {
+    super();
+    this.description = "House Blend Coffee";
+  }
+
+  cost(): number {
+    return 0.89;
   }
 }
 
-class LogMessageService extends MessageServiceDecorator {
-  send(message: string): void {
-    this.messageService.send(message);
-    console.log(`Adding logging message: ${message}`);
+abstract class CondimentDecorator extends Beverage {
+  abstract getDescription(): string;
+}
+
+class Milk extends CondimentDecorator {
+  beverage: Beverage;
+
+  constructor(beverage: Beverage) {
+    super();
+    this.beverage = beverage;
+  }
+
+  getDescription(): string {
+    return this.beverage.getDescription() + ", Milk";
+  }
+
+  cost(): number {
+    return this.beverage.cost() + 0.1;
   }
 }
 
-// ====================================
+class Mocha extends CondimentDecorator {
+  beverage: Beverage;
 
-let messageService = new EmailMessageService();
-messageService = new SMSMessageService(messageService);
-messageService = new LogMessageService(messageService);
-const user = new User(messageService);
-user.create("John");
+  constructor(beverage: Beverage) {
+    super();
+    this.beverage = beverage;
+  }
+
+  getDescription(): string {
+    return this.beverage.getDescription() + ", Mocha";
+  }
+
+  cost(): number {
+    return this.beverage.cost() + 0.2;
+  }
+}
+
+class Whip extends CondimentDecorator {
+  beverage: Beverage;
+
+  constructor(beverage: Beverage) {
+    super();
+    this.beverage = beverage;
+  }
+
+  getDescription(): string {
+    return this.beverage.getDescription() + ", Whip";
+  }
+
+  cost(): number {
+    return this.beverage.cost() + 0.15;
+  }
+}
+
+let beverage: Beverage = new Espresso();
+console.log(`${beverage.getDescription()} $${beverage.cost()}`);
+
+beverage = new Milk(beverage);
+beverage = new Mocha(beverage);
+beverage = new Whip(beverage);
+
+console.log(`${beverage.getDescription()} $${beverage.cost()}`);
