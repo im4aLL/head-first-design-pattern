@@ -78,3 +78,10 @@ employees.forEach((emp) => emp.accept(payroll));
 
 console.log("\n=== Report ===");
 employees.forEach((emp) => emp.accept(report));
+
+/*
+You can add new operations (like TaxCalculator, BonusCalculator, etc.)
+without modifying any Employee class.
+Keeps your data (employees) separate from logic (visitors).
+Perfect for systems that deal with hierarchies of objects where you often need to run different operations.
+*/
