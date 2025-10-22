@@ -106,3 +106,9 @@ rubber.performFly(); // I'm flying with wings!
 // No duplicated code in subclasses
 // Behavior can change at runtime
 // Easy to add new behaviors without modifying existing ducks
+
+// Still there is one problem with abstract class Duck
+// It's hard to extend the behavior of Duck without modifying the Duck class itself.
+// You can use dynamic composition to solve this problem.
+
+// By creating a separate class for each behavior and then using composition to combine them. This allows you to easily add new behaviors without modifying existing ducks.
