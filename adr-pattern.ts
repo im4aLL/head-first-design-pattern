@@ -1,5 +1,9 @@
-// adr-deno.ts
-import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
+// adr-oak.ts
+import {
+  Application,
+  Router,
+  Context,
+} from "https://deno.land/x/oak@v12.6.1/mod.ts";
 
 /** --- Domain: business logic --- */
 class GetUserProfileDomain {
@@ -11,59 +15,60 @@ class GetUserProfileDomain {
   getUserById(id: number) {
     return this.users.find((u) => u.id === id) || null;
   }
+
+  getAllUsers() {
+    return this.users;
+  }
 }
 
 /** --- Responder: builds response --- */
 class JsonResponder {
-  send(data: any, statusCode = 200) {
-    return new Response(JSON.stringify(data), {
-      status: statusCode,
-      headers: { "Content-Type": "application/json" },
-    });
+  send(ctx: Context, data: any, status = 200) {
+    ctx.response.status = status;
+    ctx.response.body = data;
   }
 }
 
-/** --- Action: handles request --- */
+/** --- Actions --- */
 class GetUserProfileAction {
   private domain = new GetUserProfileDomain();
   private responder = new JsonResponder();
 
-  handle(url: URL) {
-    const idParam = url.searchParams.get("id");
-    const id = Number(idParam);
+  getAll(ctx: Context) {
+    const users = this.domain.getAllUsers();
+    this.responder.send(ctx, users);
+  }
 
-    if (!idParam || isNaN(id)) {
-      return this.responder.send({ error: "User ID is required" }, 400);
+  getById(ctx: Context) {
+    const id = Number(ctx.params.id);
+    if (isNaN(id)) {
+      this.responder.send(ctx, { error: "Invalid user ID" }, 400);
+      return;
     }
 
     const user = this.domain.getUserById(id);
-
     if (!user) {
-      return this.responder.send({ error: "User not found" }, 404);
+      this.responder.send(ctx, { error: "User not found" }, 404);
+      return;
     }
 
-    return this.responder.send(user);
+    this.responder.send(ctx, user);
   }
 }
 
-/** --- Server --- */
+/** --- Router setup --- */
+const router = new Router();
 const action = new GetUserProfileAction();
 
+router
+  .get("/users", (ctx) => action.getAll(ctx))
+  .get("/users/:id", (ctx) => action.getById(ctx));
+
+/** --- Application --- */
+const app = new Application();
+
+app.use(router.routes());
+app.use(router.allowedMethods());
+
 console.log("Server running at http://localhost:8000");
-serve(
-  (req) => {
-    const url = new URL(req.url, `http://${req.headers.get("host")}`);
-
-    if (url.pathname === "/user/profile") {
-      return action.handle(url);
-    }
-
-    return new Response(JSON.stringify({ error: "Not Found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
-  },
-  { port: 8000 },
-);
-
-// deno run --allow-net adr-pattern.ts
+await app.listen({ port: 8000 });
